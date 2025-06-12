@@ -1,0 +1,131 @@
+#!/bin/bash
+
+if [ $(whoami) != "root" ];then
+    echo -e "检测到非root用户安装，请尝试以下解决方案：\n   1.请切换到root用户安装 \n   2.尝试执行以下安装命令：\n     sudo bash $0 $@"
+    exit 1
+fi
+
+
+DEFAULT_NFINX_CONFIG="/etc/nginx/nginx.conf"
+SCRIPT_DIR="/www/script/"
+PASSWORD_FILE="/www/data/db/www_password.txt"
+DB_FILE="/www/data/db/maxiaoledb.db"
+#创建文件
+mkdir -p /www/server/php
+mkdir -p /www/script
+mkdir -p /www/data/nginx
+mkdir -p /www/data/php
+mkdir -p /www/data/run
+mkdir -p /www/data/php/php-fpm-pool
+mkdir -p /www/data/db
+mkdir -p /www/log/nginx
+mkdir -p /www/log/php
+mkdir -p /www/server/mysql
+mkdir -p /www/data/mysql
+mkdir -p /www/data/mysql/etc
+mkdir -p /www/data/mysql/db
+mkdir -p /www/data/package
+mkdir -p /www/data/package/openssl
+mkdir -p /www/server/nginx/ngin
+mkdir -p /www/data/nginx/nginx/conf
+mkdir -p /www/log/mysql/InnoDB
+touch /www/log/mysql/mysql-slow.log
+
+#创建www用户
+useradd -r -s /usr/sbin/nologin www
+
+
+#更新软件包
+echo "开始更新软件包"
+apt update -y
+echo "更新完成"
+#安装必要组件
+sudo apt install -y \
+    build-essential \
+    libxml2-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+	libaio-dev \
+    libmcrypt-dev \
+    libreadline-dev \
+	libboost-all-dev \
+    libsqlite3-dev \
+    libicu-dev \
+    libbz2-dev \
+    libxslt-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libmariadb-dev-compat \
+    libpspell-dev \
+    autoconf \
+    pkg-config \
+    re2c \
+	libsqlite3-dev \
+    libargon2-dev \
+    git \
+    wget \
+	cmake \
+	libncurses5-dev \
+	bison \
+	libpcre3-dev \
+	zlib1g-dev \
+    curl \
+	libpam0g-dev \
+    unzip \
+    zlib1g-dev \
+    libpcre3-dev \
+    libonig-dev
+
+#安装配置nginx
+${SCRIPT_DIR}install-nginx.sh 1.28.0
+#安装配置MySQL
+
+#使用Install-php脚本安装php
+${SCRIPT_DIR}php-install.sh 8.4.0
+#sqlite操作
+${SCRIPT_DIR}install-sqlite.sh
+#下载web源码 
+
+#启动web源码
+
+
+#附加权限
+chown www:www -R /www
+chmod 770 -R /www
+
+
+#启动服务
+pkill pure-ftpd
+systemctl daemon-reload 
+systemctl start pure-ftpd.service 
+systemctl enable pure-ftpd.service
+echo "pure-ftp启动成功"
+systemctl start mysql.service 
+systemctl enable mysql.service
+echo "mysql启动成功"
+systemctl start nginx 
+systemctl enable nginx
+echo "nginx启动成功"
+ps -aux | grep nginx mysql pure-ftpd php
+
+#创建一个www权限的虚拟用户
+#生成随机密码
+PASSWORD=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 9)
+# 将生成的密码保存到文件
+echo "$PASSWORD" > "$PASSWORD_FILE"
+/www/server/ftp/bin/pure-pw useradd www -u www -d /www <<EOF
+$PASSWORD
+$PASSWORD
+EOF
+/www/server/ftp/bin/pure-pw mkdb
+#密码写入到数据库中
+sqlite3 "$DB_FILE" <<EOF
+#这里写sql语句
+#这里写sql语句
+#这里写sql语句
+#这里写sql语句
+#这里写sql语句
+EOF

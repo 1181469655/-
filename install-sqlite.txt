@@ -1,0 +1,9 @@
+#!/bin/bash
+# 定义数据库文件
+DB_PATH="/www/data/db/maxiaoledb.db"
+sudo apt install sqlite3 -y
+sudo apt install php-sqlite3 -y
+# 使用 sqlite3 创建数据库文件
+sqlite3 $DB_PATH "VACUUM;"
+# 输出提示信息
+echo "数据库'$DB_PATH'创建成功！"
